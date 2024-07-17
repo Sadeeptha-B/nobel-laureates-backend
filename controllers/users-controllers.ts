@@ -9,11 +9,11 @@ const DUMMY_USERS = [
     id: "u1",
     name: "Sadeeptha",
     email: "sadeeptha.bandara@gmail.com",
-    password: "test",
+    password: "tester2",
   },
 ];
 
-export const signup: RequestHandler = (req, res, next) => {
+const signup: RequestHandler = (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -44,4 +44,17 @@ export const signup: RequestHandler = (req, res, next) => {
   res.status(201).json(createdUser);
 };
 
-export const login: RequestHandler = (req, res, next) => {};
+const login: RequestHandler = (req, res) => {
+  const { email, password } = req.body as User;
+  console.log(DUMMY_USERS)
+  const knownUser = DUMMY_USERS.find((u) => u.email === email);
+
+  // No password hashing for now
+  if (!knownUser || knownUser.password !== password) {
+    throw new HttpError("Either email or password is incorrect", 401);
+  }
+
+  res.json({ message: "Logged in" });
+};
+
+export { signup, login };

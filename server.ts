@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import express, { NextFunction, Request, Response } from "express";
 import userRouter from "./routes/users-routes";
 import HttpError from "./models/http-error";
+import commentsRouter from "./routes/comments-routes";
 
 const PORT = 3000;
 const app = express();
@@ -9,6 +10,7 @@ const app = express();
 // Middleware
 app.use(bodyParser.json());
 app.use("/api/users", userRouter);
+app.use("/api/comments", commentsRouter);
 
 app.use((req, res, next) => {
   throw new HttpError("Unknown path", 404);
