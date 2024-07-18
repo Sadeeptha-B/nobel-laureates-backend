@@ -1,8 +1,7 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler } from "express";
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
-import { IUser } from "../models/user";
-import { randomUUID } from "crypto";
+import { IUser, User } from "../models/user";
 
 const DUMMY_USERS = [
   {
@@ -13,48 +12,51 @@ const DUMMY_USERS = [
   },
 ];
 
-const signup: RequestHandler = (req, res) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    throw new HttpError(
-      `${errors
-        .array()
-        .map((e) => e.msg)
-        .join(",")}`,
-      422
-    );
-  }
-
+const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
 
-  const hasUser = DUMMY_USERS.find((u) => u.email === email);
-  if (hasUser) {
-    throw new HttpError("User already exists", 422);
+  try {
+    const existingUser = await User.findOne({ email: email });
+
+    if (existingUser) {
+      throw new HttpError("User already exists", 422);
+    }
+
+    const createdUser = new User({
+      name,
+      email,
+      password,
+    });
+
+    await createdUser.save();
+    res.status(201).json(createdUser);
+  } catch (err) {
+    const error =
+      err instanceof HttpError
+        ? err
+        : new HttpError("Signing up failed, please try again.", 500);
+    return next(error);
   }
-
-  const createdUser = {
-    id: randomUUID(),
-    name,
-    email,
-    password,
-  };
-
-  DUMMY_USERS.push(createdUser);
-  res.status(201).json(createdUser);
 };
 
-const login: RequestHandler = (req, res) => {
+const login: RequestHandler = async (req, res, next) => {
   const { email, password } = req.body as IUser;
-  console.log(DUMMY_USERS);
-  const knownUser = DUMMY_USERS.find((u) => u.email === email);
 
-  // No password hashing for now
-  if (!knownUser || knownUser.password !== password) {
-    throw new HttpError("Either email or password is incorrect", 401);
+  try {
+    const existingUser = await User.findOne({ email: email });
+
+    if (!existingUser || existingUser.password !== password) {
+      throw new HttpError("Either email or password is incorrect", 401);
+    }
+  } catch (err) {
+    const error =
+      err instanceof HttpError
+        ? err
+        : new HttpError("Signing up failed, please try again.", 500);
+    return next(error);
   }
 
-  res.json({ message: "Logged in" });
+  res.json({ message: "Login successful" });
 };
 
 export { signup, login };

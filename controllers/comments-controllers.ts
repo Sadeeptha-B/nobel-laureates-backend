@@ -2,7 +2,6 @@ import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
 import { IComment } from "../models/comment";
 import { RequestHandler } from "express";
-import { randomUUID } from "crypto";
 
 const DUMMY_COMMENTS = [
   {
@@ -33,21 +32,7 @@ const getCommentsByLaureateId: RequestHandler = (req, res) => {
   res.json({ comments: [] });
 };
 
-const postComment: RequestHandler = (req, res, next) => {
-  // TODO: DRY with usercontroller. make util. However wait till db is integrated
-  // Note that if the code is async, error handling should happen with the next function
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty) {
-    throw new HttpError(
-      `${errors
-        .array()
-        .map((e) => e.msg)
-        .join(",")}`,
-      422
-    );
-  }
-
+const postComment: RequestHandler = async (req, res, next) => {
   const {
     userId,
     laureateId,
@@ -56,14 +41,14 @@ const postComment: RequestHandler = (req, res, next) => {
   } = req.body as IComment;
 
   const newComment = {
-    id: randomUUID(),
+    id: 1,
     userId,
     laureateId,
     content,
     timePosted,
   };
 
-  DUMMY_COMMENTS.push(newComment);
+  // DUMMY_COMMENTS.push(newComment);
   res.status(201).json({ comment: newComment });
 };
 

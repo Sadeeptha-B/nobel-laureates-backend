@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { body, check } from "express-validator";
 import * as usersController from "../controllers/users-controllers";
+import handleValidationErrors from "../middleware/validation";
 
 const userRouter = Router();
 
@@ -15,7 +16,7 @@ const signupValidationRules = [
     .withMessage("Field: password must have at least 6 characters"),
 ];
 
-userRouter.post("/signup", signupValidationRules, usersController.signup);
+userRouter.post("/signup", signupValidationRules, handleValidationErrors, usersController.signup);
 userRouter.post("/login", usersController.login);
 
 export default userRouter;

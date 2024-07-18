@@ -16,6 +16,6 @@ const userSchema = new Schema<IUser>({
 });
 
 userSchema.plugin(uniqueValidator);
-const User = model("User", userSchema);
+const User = model<IUser>("User", userSchema);
 
 export { User };
