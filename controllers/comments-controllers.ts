@@ -1,6 +1,6 @@
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
-import { Comment } from "../models/comment";
+import { IComment } from "../models/comment";
 import { RequestHandler } from "express";
 import { randomUUID } from "crypto";
 
@@ -48,7 +48,12 @@ const postComment: RequestHandler = (req, res, next) => {
     );
   }
 
-  const { userId, laureateId, content, timePosted } = req.body as Comment;
+  const {
+    userId,
+    laureateId,
+    content,
+    createdAt: timePosted,
+  } = req.body as IComment;
 
   const newComment = {
     id: randomUUID(),

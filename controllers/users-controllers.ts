@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
-import { User } from "../models/user";
+import { IUser } from "../models/user";
 import { randomUUID } from "crypto";
 
 const DUMMY_USERS = [
@@ -26,7 +26,7 @@ const signup: RequestHandler = (req, res) => {
     );
   }
 
-  const { name, email, password } = req.body as User;
+  const { name, email, password } = req.body as IUser;
 
   const hasUser = DUMMY_USERS.find((u) => u.email === email);
   if (hasUser) {
@@ -45,8 +45,8 @@ const signup: RequestHandler = (req, res) => {
 };
 
 const login: RequestHandler = (req, res) => {
-  const { email, password } = req.body as User;
-  console.log(DUMMY_USERS)
+  const { email, password } = req.body as IUser;
+  console.log(DUMMY_USERS);
   const knownUser = DUMMY_USERS.find((u) => u.email === email);
 
   // No password hashing for now
