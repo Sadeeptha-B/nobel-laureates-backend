@@ -4,7 +4,6 @@ export interface IComment {
   userId: Types.ObjectId;
   laureateId: string;
   content: string;
-  createdAt: string;
 }
 
 const commentSchema = new Schema<IComment>(

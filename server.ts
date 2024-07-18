@@ -1,10 +1,12 @@
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
+import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
-import userRouter from "./routes/users-routes";
-import HttpError from "./models/http-error";
-import commentsRouter from "./routes/comments-routes";
 import mongoose from "mongoose";
+
+import userRouter from "./routes/users-routes";
+import commentsRouter from "./routes/comments-routes";
+import HttpError from "./models/http-error";
 
 // Config
 dotenv.config();
@@ -13,6 +15,7 @@ const MONGO_URI = process.env.MONGO_URI as string;
 
 //Express
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/users", userRouter);
 app.use("/api/comments", commentsRouter);
