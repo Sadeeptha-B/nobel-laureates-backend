@@ -4,7 +4,6 @@ import * as jwt from "jsonwebtoken";
 import HttpError from "../models/http-error";
 import { IUser, User } from "../models/user";
 import { handleHttpError } from "../middleware/error-handling";
-import { randomBytes } from "crypto";
 
 const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
