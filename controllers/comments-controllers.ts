@@ -1,55 +1,71 @@
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
-import { IComment } from "../models/comment";
+import { Comment, IComment } from "../models/comment";
 import { RequestHandler } from "express";
+import { handleHttpError } from "../middleware/error-handling";
+import { User } from "../models/user";
 
-const DUMMY_COMMENTS = [
-  {
-    id: "c1",
-    userId: "u1",
-    laureateId: "1",
-    content: "Rontgen is great",
-    timePosted: "dateString",
-  },
-];
-
-const getCommentById: RequestHandler = (req, res) => {
+const getCommentById: RequestHandler = async (req, res, next) => {
   const commentId = req.params.commentId;
 
-  const comment = DUMMY_COMMENTS.find((c) => c.id == commentId);
+  try {
+    const comment = await Comment.findById(commentId);
 
-  if (!comment) {
-    throw new HttpError(`Comment with ${commentId} does not exist`, 404);
+    if (!comment) {
+      throw new HttpError(`Comment with ${commentId} does not exist`, 404);
+    }
+    res.json({ comment: comment.toObject({ getters: true }) });
+  } catch (err) {
+    handleHttpError(err, next, "Unknown error. Could not find comment");
   }
-
-  res.json({ comment });
 };
 
-const getCommentsByLaureateId: RequestHandler = (req, res) => {
+const getCommentsByLaureateId: RequestHandler = async (req, res, next) => {
   const laureateId = req.params.laureateId;
 
-  const comments = DUMMY_COMMENTS.filter((c) => c.laureateId == laureateId);
-  res.json({ comments: [] });
+  try {
+    const comments = await Comment.find({ laureateId: laureateId });
+
+    if (!comments) {
+      throw new HttpError("Could not find comments", 404);
+    }
+
+    res.json({
+      comments: comments.map((comment) => comment.toObject({ getters: true })),
+    });
+  } catch (err) {
+    handleHttpError(err, next, "Unknown error. Could not find comment");
+  }
 };
 
 const postComment: RequestHandler = async (req, res, next) => {
-  const {
-    userId,
-    laureateId,
-    content,
-    createdAt: timePosted,
-  } = req.body as IComment;
+  const { userId, laureateId, content } = req.body as IComment;
 
-  const newComment = {
-    id: 1,
-    userId,
-    laureateId,
-    content,
-    timePosted,
-  };
+  try {
+    const user = await User.findById(userId);
 
-  // DUMMY_COMMENTS.push(newComment);
-  res.status(201).json({ comment: newComment });
+    if (!user) {
+      throw new HttpError(
+        `User with ${userId} cannot be found. Unable to create comment`,
+        404
+      );
+    }
+
+    const newComment = new Comment({
+      userId,
+      laureateId,
+      content,
+    });
+
+    await newComment.save();
+    res.status(201).json(newComment);
+  } catch (err) {
+    return handleHttpError(
+      err,
+      next,
+      "Unable to create comment. Please try again"
+    );
+  }
 };
 
 export { getCommentById, postComment, getCommentsByLaureateId };

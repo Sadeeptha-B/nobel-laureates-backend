@@ -2,15 +2,7 @@ import { NextFunction, Request, RequestHandler } from "express";
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
 import { IUser, User } from "../models/user";
-
-const DUMMY_USERS = [
-  {
-    id: "u1",
-    name: "Sadeeptha",
-    email: "sadeeptha.bandara@gmail.com",
-    password: "tester2",
-  },
-];
+import { handleHttpError } from "../middleware/error-handling";
 
 const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
@@ -31,11 +23,7 @@ const signup: RequestHandler = async (req, res, next) => {
     await createdUser.save();
     res.status(201).json(createdUser);
   } catch (err) {
-    const error =
-      err instanceof HttpError
-        ? err
-        : new HttpError("Signing up failed, please try again.", 500);
-    return next(error);
+    return handleHttpError(err, next, "Sign up failed. Please try again");
   }
 };
 
@@ -49,11 +37,7 @@ const login: RequestHandler = async (req, res, next) => {
       throw new HttpError("Either email or password is incorrect", 401);
     }
   } catch (err) {
-    const error =
-      err instanceof HttpError
-        ? err
-        : new HttpError("Signing up failed, please try again.", 500);
-    return next(error);
+    return handleHttpError(err, next, "Login failed. Please try again later");
   }
 
   res.json({ message: "Login successful" });
