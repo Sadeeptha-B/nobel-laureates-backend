@@ -1,22 +1,25 @@
-import dotenv from "dotenv";
+import express, { NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import express, { NextFunction, Request, Response } from "express";
+import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 
 import userRouter from "./routes/users-routes";
 import commentsRouter from "./routes/comments-routes";
 import HttpError from "./models/http-error";
-
-// Config
-dotenv.config();
-const PORT = process.env.PORT as string;
-const MONGO_URI = process.env.MONGO_URI as string;
+import { PORT, MONGO_URI, CLIENT_URL } from "./constants";
 
 //Express
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true, // pass in cookies, auth headers
+  })
+);
+
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use("/api/users", userRouter);
 app.use("/api/comments", commentsRouter);
 

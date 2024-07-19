@@ -1,9 +1,15 @@
+import { REFRESH_TOKEN_KEY, TOKEN_SECRET } from "./../constants";
 import { RequestHandler } from "express";
 import bcrypt from "bcryptjs";
-import * as jwt from "jsonwebtoken";
 import HttpError from "../models/http-error";
 import { IUser, User } from "../models/user";
 import { handleHttpError } from "../middleware/error-handling";
+import {
+  generateAccessToken,
+  generateTokens,
+  verifyToken,
+} from "../utils/jwt-helper";
+import { UserData } from "../models/jwt-encoding";
 
 const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
@@ -25,11 +31,23 @@ const signup: RequestHandler = async (req, res, next) => {
     });
 
     await createdUser.save();
-    const token = generateJWT(createdUser.id, createdUser.email);
 
-    res
-      .status(201)
-      .json({ userId: createdUser.id, email: createdUser.email, token: token });
+    const [accessToken, refreshToken] = generateTokens({
+      userId: createdUser.id,
+      email: createdUser.email,
+    } as UserData);
+
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, {
+      httpOnly: true,
+      secure: true,
+      path: "/", // If the frontend is hosted in the same domain
+    });
+
+    res.status(201).json({
+      userId: createdUser.id,
+      email: createdUser.email,
+      token: accessToken,
+    });
   } catch (err) {
     return handleHttpError(err, next, "Sign up failed. Please try again");
   }
@@ -50,26 +68,49 @@ const login: RequestHandler = async (req, res, next) => {
       throw new HttpError("Invalid password", 401);
     }
 
-    const token = generateJWT(existingUser.id, existingUser.email);
-    res.json({
+    const [accessToken, refreshToken] = generateTokens({
       userId: existingUser.id,
       email: existingUser.email,
-      token: token,
+    } as UserData);
+
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, {
+      httpOnly: true,
+      secure: true,
+      path: "/", // If the frontend is hosted in the same domain
+    });
+
+    res.status(200).json({
+      userId: existingUser.id,
+      email: existingUser.email,
+      token: accessToken,
     });
   } catch (err) {
     return handleHttpError(err, next, "Login failed. Please try again later");
   }
 };
 
-const generateJWT = (userId: string, email: string) => {
-  return jwt.sign(
-    {
-      userId,
-      email,
-    },
-    process.env.TOKEN_SECRET as string,
-    { expiresIn: "1800s" }
-  );
+const refreshAccessToken: RequestHandler = async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+
+  try {
+    if (!refreshToken) {
+      throw new HttpError("Verification Error", 403);
+    }
+
+    verifyToken(refreshToken, (err, data) => {
+      if (err) throw new HttpError("Verification failed", 403);
+      const accessToken = generateAccessToken(data as UserData);
+      res
+        .status(200)
+        .json({ userId: data.userId, email: data.email, token: accessToken });
+    });
+  } catch (error) {
+    return handleHttpError(
+      error,
+      next,
+      "Server Error. Token refresh unsuccessful"
+    );
+  }
 };
 
-export { signup, login };
+export { signup, login, refreshAccessToken };
