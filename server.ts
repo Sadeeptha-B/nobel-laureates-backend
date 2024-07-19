@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
+import morgan from "morgan";
 
 import userRouter from "./routes/users-routes";
 import commentsRouter from "./routes/comments-routes";
@@ -20,6 +21,7 @@ app.use(
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(morgan("dev"))
 app.use("/api/users", userRouter);
 app.use("/api/comments", commentsRouter);
 
@@ -47,3 +49,5 @@ mongoose
     });
   })
   .catch((err) => console.error("Database Connection Error"));
+
+
