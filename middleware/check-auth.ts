@@ -5,7 +5,7 @@ import * as jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../constants";
 import { verifyToken } from "../utils/jwt-helper";
 
-const validateAuth: RequestHandler = (req, res, next) => {
+const checkAuth: RequestHandler = (req, res, next) => {
   // Allow options request through
   if (req.method === "OPTIONS") {
     return next();
@@ -23,8 +23,8 @@ const validateAuth: RequestHandler = (req, res, next) => {
       throw new HttpError("Token is not encoded in Authorization Header", 401);
     }
 
-    const decodedToken = verifyToken(token, (err, data) => {
-      if (err) throw new HttpError("Verification failed", 403);
+    verifyToken(token, (err, data) => {
+      if (err) throw new HttpError("Access Token expired", 403);
       // req.user = user;
       next();
     });
@@ -36,4 +36,4 @@ const validateAuth: RequestHandler = (req, res, next) => {
   }
 };
 
-export default validateAuth;
+export default checkAuth;

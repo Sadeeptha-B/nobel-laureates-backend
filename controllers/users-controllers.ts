@@ -94,12 +94,21 @@ const refreshAccessToken: RequestHandler = async (req, res, next) => {
 
   try {
     if (!refreshToken) {
-      throw new HttpError("Verification Error", 403);
+      throw new HttpError("Refresh token not received", 403);
     }
 
     verifyToken(refreshToken, (err, data) => {
-      if (err) throw new HttpError("Verification failed", 403);
-      const accessToken = generateAccessToken(data as UserData);
+      if (err)
+        throw new HttpError("Refresh token verification unsuccessful", 403);
+
+      console.log("Refresh token verification successful");
+
+      const accessToken = generateAccessToken({
+        userId: data.userId,
+        email: data.email,
+      } as UserData);
+
+      console.log("Access Token generation successful");
       res
         .status(200)
         .json({ userId: data.userId, email: data.email, token: accessToken });

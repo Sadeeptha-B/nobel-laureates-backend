@@ -38,6 +38,6 @@ userRouter.post(
   usersController.login
 );
 
-userRouter.post("/refreshToken", usersController.refreshAccessToken);
+userRouter.get("/refreshToken", usersController.refreshAccessToken);
 
 export default userRouter;
