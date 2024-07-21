@@ -122,4 +122,23 @@ const refreshAccessToken: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { signup, login, refreshAccessToken };
+// Get Authenticated user's details
+const getAuthUserDetails: RequestHandler = async (req, res, next) => {
+  const { userId } = res.locals;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new HttpError(`User with ${userId} not found`, 404);
+    }
+
+    res
+      .status(200)
+      .json({ userId: user.id, name: user.name, email: user.email });
+  } catch (err) {
+    return handleHttpError(err, next, "Unable to retrieve authenticated user");
+  }
+};
+
+export { signup, login, refreshAccessToken, getAuthUserDetails as getAuthUser };

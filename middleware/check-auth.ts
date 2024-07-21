@@ -1,7 +1,6 @@
 import { RequestHandler } from "express";
 import HttpError from "../models/http-error";
 import { handleHttpError } from "./error-handling";
-import * as jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../constants";
 import { verifyToken } from "../utils/jwt-helper";
 
@@ -27,6 +26,7 @@ const checkAuth: RequestHandler = (req, res, next) => {
       if (err) throw new HttpError("Access Token expired", 403);
       // extracting user id to response object
       res.locals.userId = data.userId;
+
       // Authentication successful. Continue
       next();
     });
