@@ -30,7 +30,7 @@ const getCommentsByLaureateId: RequestHandler = async (req, res, next) => {
       throw new HttpError("Could not find comments", 404);
     }
 
-    res.json({
+    res.status(200).json({
       comments: comments.map((comment) => comment.toObject({ getters: true })),
     });
   } catch (err) {
@@ -39,10 +39,13 @@ const getCommentsByLaureateId: RequestHandler = async (req, res, next) => {
 };
 
 const postComment: RequestHandler = async (req, res, next) => {
-  const { userId, laureateId, content } = req.body as IComment;
+  // Userid is set in res.local by checkAuth middleware
+  const {userId} = res.locals
+  const { laureateId, content } = req.body as IComment;
 
   try {
     const user = await User.findById(userId);
+    console.log(user)
 
     if (!user) {
       throw new HttpError(
@@ -53,12 +56,13 @@ const postComment: RequestHandler = async (req, res, next) => {
 
     const newComment = new Comment({
       userId,
+      username: user.name,
       laureateId,
       content,
     });
 
     await newComment.save();
-    res.status(201).json(newComment);
+    res.status(201).json(newComment.toObject({ getters: true }));
   } catch (err) {
     return handleHttpError(
       err,

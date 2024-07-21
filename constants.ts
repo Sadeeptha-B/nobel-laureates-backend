@@ -8,5 +8,5 @@ export const MONGO_URI =
 export const CLIENT_URL = process.env.CLIENT_URL;
 
 export const REFRESH_TOKEN_KEY = "refreshToken";
-export const ACCESS_TOKEN_LIFETIME = "20s"; //30min
-export const REFRESH_TOKEN_LIFETIME = "5m";
+export const ACCESS_TOKEN_LIFETIME = "30m"; //30min
+export const REFRESH_TOKEN_LIFETIME = "1h";
