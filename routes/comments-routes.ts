@@ -9,11 +9,8 @@ const commentsRouter = Router();
 // User must be authenticated to access comments routes
 commentsRouter.use(checkAuth);
 
+commentsRouter.get("/", commentsController.getCommentsByLaureateId);
 commentsRouter.get("/:commentId", commentsController.getCommentById);
-commentsRouter.get(
-  "/laureate/:laureateId",
-  commentsController.getCommentsByLaureateId
-);
 commentsRouter.post(
   "/",
   [

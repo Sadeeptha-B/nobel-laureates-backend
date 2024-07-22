@@ -20,9 +20,13 @@ const getCommentById: RequestHandler = async (req, res, next) => {
 };
 
 const getCommentsByLaureateId: RequestHandler = async (req, res, next) => {
-  const laureateId = req.params.laureateId;
+  const laureateId = req.query.laureateId;
 
   try {
+    if (!laureateId) {
+      throw new HttpError("Laureate Id not provided", 400);
+    }
+
     const comments = await Comment.find({ laureateId: laureateId });
 
     if (!comments) {
@@ -39,7 +43,7 @@ const getCommentsByLaureateId: RequestHandler = async (req, res, next) => {
 
 const postComment: RequestHandler = async (req, res, next) => {
   // Userid is set in res.local by checkAuth middleware
-  const {userId} = res.locals
+  const { userId } = res.locals;
   const { laureateId, content } = req.body as IComment;
 
   try {
