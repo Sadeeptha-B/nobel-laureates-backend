@@ -11,6 +11,12 @@ import {
 } from "../utils/jwt-helper";
 import { UserData } from "../models/jwt-encoding";
 
+const cookieSettings = {
+  httpOnly: true,
+  secure: true,
+  path: "/", // If the frontend is hosted in the same domain
+};
+
 const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
 
@@ -37,11 +43,7 @@ const signup: RequestHandler = async (req, res, next) => {
       email: createdUser.email,
     } as UserData);
 
-    res.cookie(REFRESH_TOKEN_KEY, refreshToken, {
-      httpOnly: true,
-      secure: true,
-      path: "/", // If the frontend is hosted in the same domain
-    });
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, cookieSettings);
 
     res.status(201).json({
       userId: createdUser.id,
@@ -73,11 +75,7 @@ const login: RequestHandler = async (req, res, next) => {
       email: existingUser.email,
     } as UserData);
 
-    res.cookie(REFRESH_TOKEN_KEY, refreshToken, {
-      httpOnly: true,
-      secure: true,
-      path: "/", // If the frontend is hosted in the same domain
-    });
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, cookieSettings);
 
     res.status(200).json({
       userId: existingUser.id,
@@ -87,6 +85,11 @@ const login: RequestHandler = async (req, res, next) => {
   } catch (err) {
     return handleHttpError(err, next, "Login failed. Please try again later");
   }
+};
+
+const logout: RequestHandler = async (req, res, next) => {
+  res.clearCookie(REFRESH_TOKEN_KEY, cookieSettings);
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
 const refreshAccessToken: RequestHandler = async (req, res, next) => {
@@ -141,4 +144,4 @@ const getAuthUserDetails: RequestHandler = async (req, res, next) => {
   }
 };
 
-export { signup, login, refreshAccessToken, getAuthUserDetails as getAuthUser };
+export { signup, login, logout, refreshAccessToken, getAuthUserDetails };

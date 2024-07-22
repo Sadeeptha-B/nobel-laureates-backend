@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body, check } from "express-validator";
+import { body } from "express-validator";
 import * as usersController from "../controllers/users-controllers";
 import { handleValidationErrors } from "../middleware/error-handling";
 import checkAuth from "../middleware/check-auth";
@@ -39,8 +39,10 @@ userRouter.post(
   usersController.login
 );
 
+userRouter.post("/logout", usersController.logout)
+
 userRouter.get("/refreshToken", usersController.refreshAccessToken);
 
-userRouter.get("/getAuthUser", checkAuth, usersController.getAuthUser);
+userRouter.get("/getAuthUser", checkAuth, usersController.getAuthUserDetails);
 
 export default userRouter;
