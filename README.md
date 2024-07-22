@@ -3,6 +3,11 @@
 Backend for the Nobel Laureates Project. This is built with Express, MongoDB, TypeScript. The ORM used is Mongoose. Handles authentication as well as serving content from the MongoDB database. Authentication makes use of JWT with Access tokens and refresh tokens.
 The frontend for the project is at [Nobel Laureates Frontend](https://github.com/Sadeeptha-B/nobel-laureates-frontend)
 
+## Features in progress
+
+- Rate limiting middleware
+- Unit testing
+
 ## Running locally
 
 Clone this github repository with

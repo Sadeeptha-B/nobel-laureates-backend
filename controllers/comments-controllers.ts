@@ -1,4 +1,3 @@
-import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
 import { Comment, IComment } from "../models/comment";
 import { RequestHandler } from "express";
@@ -45,7 +44,6 @@ const postComment: RequestHandler = async (req, res, next) => {
 
   try {
     const user = await User.findById(userId);
-    console.log(user)
 
     if (!user) {
       throw new HttpError(
