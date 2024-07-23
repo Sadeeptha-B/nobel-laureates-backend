@@ -25,6 +25,7 @@ PORT=
 CLIENT_URL=
 MONGO_URI=
 TOKEN_SECRET=
+RECAPTCHA_SECRET_KEY=
 ```
 
 The port denotes the port in which the server is to be run. Client URL is for the frontend project URL when running locally. Mongo URI is the connection string to a MongoDB Atlas Database. Token secret is the secret used to sign the JWT key.

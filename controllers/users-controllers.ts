@@ -1,4 +1,6 @@
-import { REFRESH_TOKEN_KEY, TOKEN_SECRET } from "./../constants";
+import {
+  REFRESH_TOKEN_KEY,
+} from "./../constants";
 import { RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import HttpError from "../models/http-error";
@@ -24,7 +26,7 @@ const signup: RequestHandler = async (req, res, next) => {
     const existingUser = await User.findOne({ email: email });
 
     if (existingUser) {
-      throw new HttpError("User already exists", 422);
+      throw new HttpError("User email already registered", 422);
     }
 
     // Hashing password

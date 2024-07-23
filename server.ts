@@ -42,7 +42,7 @@ app.use((error: HttpError, req: Request, res: Response, next: NextFunction) => {
 
 // Database and server setup
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI as string)
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);

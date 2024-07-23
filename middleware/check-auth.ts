@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import HttpError from "../models/http-error";
 import { handleHttpError } from "./error-handling";
-import { TOKEN_SECRET } from "../constants";
+import { RECAPTCHA_SECRET_KEY, TOKEN_SECRET } from "../constants";
 import { verifyToken } from "../utils/jwt-helper";
 
-const checkAuth: RequestHandler = (req, res, next) => {
+export const checkAuth: RequestHandler = (req, res, next) => {
   // Allow options request through
   if (req.method === "OPTIONS") {
     return next();
@@ -35,4 +35,23 @@ const checkAuth: RequestHandler = (req, res, next) => {
   }
 };
 
-export default checkAuth;
+export const verifyRecaptcha: RequestHandler = async (req, res, next) => {
+  const { captchaToken } = req.body;
+
+  try {
+    const verifyResponse = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${captchaToken}`,
+      { method: "POST" }
+    );
+    const data = await verifyResponse.json();
+
+    if (!data.success) {
+      throw new HttpError("Error verifying recaptcha", 401);
+    }
+
+    // reCaptcha verification successful. Continue
+    next();
+  } catch (err) {
+    return handleHttpError(err, next, "Server error when verifying reCAPTCHA");
+  }
+};
