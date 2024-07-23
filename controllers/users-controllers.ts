@@ -8,16 +8,11 @@ import { IUser, User } from "../models/user";
 import { handleHttpError } from "../middleware/error-handling";
 import {
   generateAccessToken,
-  generateTokens,
   verifyToken,
 } from "../utils/jwt-helper";
 import { UserData } from "../models/jwt-encoding";
+import { cookieSettings } from "../middleware/auth";
 
-const cookieSettings = {
-  httpOnly: true,
-  secure: true,
-  path: "/", // If the frontend is hosted in the same domain
-};
 
 const signup: RequestHandler = async (req, res, next) => {
   const { name, email, password } = req.body as IUser;
@@ -40,18 +35,10 @@ const signup: RequestHandler = async (req, res, next) => {
 
     await createdUser.save();
 
-    const [accessToken, refreshToken] = generateTokens({
-      userId: createdUser.id,
-      email: createdUser.email,
-    } as UserData);
+    res.locals.userData = {userId: createdUser.id, email: createdUser.email, creation: true}
 
-    res.cookie(REFRESH_TOKEN_KEY, refreshToken, cookieSettings);
-
-    res.status(201).json({
-      userId: createdUser.id,
-      email: createdUser.email,
-      token: accessToken,
-    });
+    // Execute auth flow
+    next()
   } catch (err) {
     return handleHttpError(err, next, "Sign up failed. Please try again");
   }
@@ -72,18 +59,10 @@ const login: RequestHandler = async (req, res, next) => {
       throw new HttpError("Invalid password", 401);
     }
 
-    const [accessToken, refreshToken] = generateTokens({
-      userId: existingUser.id,
-      email: existingUser.email,
-    } as UserData);
+    res.locals.userData = {userId: existingUser.id, email: existingUser.email, creation: false}
 
-    res.cookie(REFRESH_TOKEN_KEY, refreshToken, cookieSettings);
-
-    res.status(200).json({
-      userId: existingUser.id,
-      email: existingUser.email,
-      token: accessToken,
-    });
+    // Execute auth flow
+    next()
   } catch (err) {
     return handleHttpError(err, next, "Login failed. Please try again later");
   }

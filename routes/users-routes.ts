@@ -2,7 +2,11 @@ import { Router } from "express";
 import { body } from "express-validator";
 import * as usersController from "../controllers/users-controllers";
 import { handleValidationErrors } from "../middleware/error-handling";
-import { checkAuth, verifyRecaptcha } from "../middleware/check-auth";
+import {
+  checkAuth,
+  executeAuthFlow,
+  verifyRecaptcha,
+} from "../middleware/auth";
 
 const userRouter = Router();
 
@@ -30,7 +34,8 @@ userRouter.post(
   signupValidationRules,
   handleValidationErrors,
   verifyRecaptcha,
-  usersController.signup
+  usersController.signup,
+  executeAuthFlow
 );
 
 userRouter.post(
@@ -38,7 +43,8 @@ userRouter.post(
   loginValidationRules,
   handleValidationErrors,
   verifyRecaptcha,
-  usersController.login
+  usersController.login,
+  executeAuthFlow
 );
 
 userRouter.post("/logout", usersController.logout);

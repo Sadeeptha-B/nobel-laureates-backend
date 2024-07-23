@@ -1,8 +1,19 @@
 import { RequestHandler } from "express";
 import HttpError from "../models/http-error";
 import { handleHttpError } from "./error-handling";
-import { RECAPTCHA_SECRET_KEY, TOKEN_SECRET } from "../constants";
-import { verifyToken } from "../utils/jwt-helper";
+import {
+  RECAPTCHA_SECRET_KEY,
+  REFRESH_TOKEN_KEY,
+  TOKEN_SECRET,
+} from "../constants";
+import { generateTokens, verifyToken } from "../utils/jwt-helper";
+import { UserData } from "../models/jwt-encoding";
+
+export const cookieSettings = {
+  httpOnly: true,
+  secure: true,
+  path: "/", // If the frontend is hosted in the same domain
+};
 
 export const checkAuth: RequestHandler = (req, res, next) => {
   // Allow options request through
@@ -53,5 +64,28 @@ export const verifyRecaptcha: RequestHandler = async (req, res, next) => {
     next();
   } catch (err) {
     return handleHttpError(err, next, "Server error when verifying reCAPTCHA");
+  }
+};
+
+export const executeAuthFlow: RequestHandler = async (req, res, next) => {
+  try {
+    const { userId, email, creation } = res.locals.userData;
+
+    const [accessToken, refreshToken] = generateTokens({
+      userId,
+      email,
+    } as UserData);
+
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, cookieSettings);
+    const status = creation ? 201 : 200;
+
+    // Auth flow successful. Return response
+    res.status(status).json({
+      userId,
+      email,
+      token: accessToken,
+    });
+  } catch (error) {
+    handleHttpError(error, next, "Server error during auth flow");
   }
 };
